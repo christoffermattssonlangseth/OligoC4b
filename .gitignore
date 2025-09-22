@@ -1,7 +1,7 @@
 # Ignore data directory
 data/
 
-# Ignore large output files
+# Ignore large output files 
 *.h5ad
 *.mtx
 *.csv
@@ -9,7 +9,7 @@ data/
 *.hdf5
 *.loom
 *.log
-*.env 
+
 
 # Ignore Jupyter and notebook cache files
 .ipynb_checkpoints/
@@ -23,6 +23,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-
+# Ignore secret files
 .env
-*.env
+*.env 
