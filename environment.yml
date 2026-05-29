@@ -1,0 +1,21 @@
+name: oligoc4b
+channels:
+  - conda-forge
+dependencies:
+  - python=3.8
+  - jupyterlab
+  - ipykernel
+  - numpy
+  - pandas
+  - scipy
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - statsmodels
+  - patsy
+  - scanpy
+  - squidpy
+  - python-dotenv
+  - pip
+  # Optional dependency for notebooks that use LLM-backed cluster annotation:
+  #   pip install mllmcelltype

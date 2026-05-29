@@ -1,7 +1,5 @@
-# Ignore data directory
+# Data and large analysis artefacts
 data/
-
-# Ignore large output files 
 *.h5ad
 *.mtx
 *.csv
@@ -10,19 +8,29 @@ data/
 *.loom
 *.log
 
-
-# Ignore Jupyter and notebook cache files
+# Notebook and Jupyter state
 .ipynb_checkpoints/
+.jupyter/
 
-# Ignore Python cache files
+# Python environments and caches
+.venv/
+venv/
 __pycache__/
 *.pyc
 *.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.cache/
 
-# Ignore system files
+# Editor and system files
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
 
-# Ignore secret files
+# Secrets
 .env
-*.env 
+*.env
