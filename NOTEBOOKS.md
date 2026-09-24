@@ -23,6 +23,7 @@ Notebooks are prefixed by role so the run order is obvious from the file listing
 | `analysis_Xenium_EAE_mouse.ipynb` | analysis | reads processed h5ad |
 | `analysis_sc_EAE_falcao_mouse.ipynb` | analysis | reads processed h5ad |
 | `analysis_sc_jäkel_human.ipynb` | analysis | reads processed h5ad |
+| `analysis_spatial_complement_C5_C1q_Cfb.ipynb` | analysis | reads `Xenium_AD_mouse.h5ad`, the Xenium EAE h5ad and `visum_aging_brain.h5ad` |
 
 ---
 
@@ -61,6 +62,16 @@ Loads pre-processed `.h5ad`, subsets EAE DA-oligodendrocytes, and identifies **C
 
 ### `analysis_sc_jäkel_human.ipynb` — scRNA-seq, human oligodendrocytes (Jäkel et al.)
 Smallest notebook. Loads h5ad → normalize / log1p → dotplot of **C4B** (human ortholog). A cross-species sanity check.
+
+### `analysis_spatial_complement_C5_C1q_Cfb.ipynb` — C5, C5a receptors, C1q and Cfb across the spatial datasets
+Answers the group-lead question *"have you checked C5 and the C5 receptors (and C1q, Cfb) when checking C4b?"*. Loads all three spatial objects (Xenium AD, Xenium EAE, Visium aging; any missing file is skipped). For each dataset it (1) reports which complement genes are actually on the panel, (2) shows which cell types express them and how they change with disease / age (pseudobulk per sample where replicates exist), (3) tests cell-level co-expression with **C4b** inside oligodendrocytes and ranks the genes among all panel genes correlated with C4b, and (4) asks spatially whether receptor-expressing cells (C1q⁺ microglia in AD; C5ar1⁺ / C5ar2⁺ / Cfb⁺ cells in EAE) sit closer to C4b-high than to C4b-negative oligodendrocytes (30 µm neighbourhoods, paired test across samples). Ends with a cross-dataset availability table and a written interpretation.
+
+Headline findings (details and numbers in the notebook):
+- **C5** (mouse gene `Hc`) is not on the AD panel and is essentially not transcribed in tissue in EAE (≤0.5 % of cells) or the aging brain (~1 % of spots). C5 is plasma-derived; assessing C5a/C5b-9 needs protein staining.
+- **C5a receptors** are myeloid. C5ar1 is in ~20–45 % of microglia / macrophages / infiltrating myeloid cells and <3 % of oligodendrocytes; C5ar2 is low everywhere. Oligodendrocytes, including C4b⁺ DA-oligos, do not express them intrinsically (any signal inside oligodendrocyte segments has no rank correlation with C4b, i.e. spill-over). But C5aR1⁺ cells are ~2× enriched within 30 µm of C4b-high oligodendrocytes across 87 EAE samples (paired Wilcoxon p ≈ 4×10⁻⁷). Per-cell C5ar1 in myeloid cells is flat across lesion distance and unchanged by EAE; the tissue-level gradient is cell recruitment.
+- **C1q** is microglial. In Visium it rises with age in parallel with C4b and ranks among the top ~50 of 16 k genes correlated with C4b in white-matter-rich spots. In Xenium AD the spatial coupling of C1q⁺ microglia to C4b-high oligodendrocytes is weak and only seen in the two oldest sections; C3⁺ astrocytes, by contrast, are ~3× enriched around C4b-high oligodendrocytes in every section.
+- **Cfb** is an EAE-lesion-induced myeloid gene (strong induction in microglia, ~67 % of macrophages positive, steep lesion gradient, 1.7× enriched around C4b-high oligodendrocytes) and essentially absent in the aging brain. Not on the AD panel.
+- Caveat: the EAE neighbourhood enrichments are confounded with lesion proximity; a lesion-distance-matched comparison and a check of intrinsic C5ar1/Cfb expression in the sc/snRNA-seq datasets are the natural next steps.
 
 ---
 
