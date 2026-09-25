@@ -24,6 +24,8 @@ Notebooks are prefixed by role so the run order is obvious from the file listing
 | `analysis_sc_EAE_falcao_mouse.ipynb` | analysis | reads processed h5ad |
 | `analysis_sc_jäkel_human.ipynb` | analysis | reads processed h5ad |
 | `analysis_spatial_complement_C5_C1q_Cfb.ipynb` | analysis | reads `Xenium_AD_mouse.h5ad`, the Xenium EAE h5ad and `visum_aging_brain.h5ad` |
+| `build_public_datasets.ipynb` | build | GEO downloads → eight harmonised public `.h5ad` files (`scripts/oligoc4b_public.py`) |
+| `analysis_public_datasets_complement.ipynb` | analysis | reads the eight public `.h5ad` files |
 
 ---
 
@@ -73,6 +75,20 @@ Headline findings (details and numbers in the notebook):
 - **Cfb** is an EAE-lesion-induced myeloid gene (strong induction in microglia, ~67 % of macrophages positive, steep lesion gradient, 1.7× enriched around C4b-high oligodendrocytes) and essentially absent in the aging brain. Not on the AD panel. In the sorted Falcão MOLs it is the one panel gene with an intrinsic component: detected in 13 % of EAE-cluster MOLs vs 2 % of control MOLs and ~5× enriched in C4b⁺ MOLs.
 - **Lesion-distance matching** (section 2.5b) does not remove the neighbourhood effect: stratified by `lesion_distance_bin` the C5aR1⁺ ratio is ~2 (76 samples, 84 % > 1), and 2.2 in `non_lesion` cells. Near lesions (50–200 µm) the ratio is ~1; far from lesions it is 1.7–2.3, so C4b-high oligodendrocytes mark myeloid-rich micro-niches outside lesions.
 - **Sorted single cells (Falcão et al. 2018, section 5)** confirm the receptors are not oligodendrocyte-intrinsic: C5ar1 in 2.6 % and C5ar2 in 0.6 % of EAE-cluster MOLs versus 76 % / 9 % of microglia; Hc (C5) in <1 % of any cell type. Caveat: C1q/C3 show up in 15–25 % of EAE MOLs there, suggesting some ambient contamination, so the intrinsic-Cfb result should be re-checked in the Park AD and aging snRNA-seq data once rebuilt.
+
+### `build_public_datasets.ipynb` — public GEO datasets → harmonised h5ad
+Runs the loaders in `scripts/oligoc4b_public.py` on files fetched by `scripts/download_public_datasets.sh` (Park 2023 AD hippocampus, aging snRNA-seq HIP/CP, Ximerakis 2019 aging brain, Kaya 2022 aged white vs grey matter, Zhou 2020 5XFAD, Chen 2020 Spatial Transcriptomics AD, Jäkel 2019 and Absinta 2021 human MS). Each object gets the same `obs` columns (`dataset`, `species`, `modality`, `sample`, `group`, `group_ref`, `cell_type_coarse`, `cell_type_original`) so the analysis notebook can loop over them. Prints a per-dataset summary and a cross-tab of author labels vs coarse types for checking the annotation.
+
+### `analysis_public_datasets_complement.ipynb` — complement panel across the public datasets
+Same questions as the in-house complement notebook, asked of the eight public datasets: which cell types express C4b, C1q, C3, C5 (`Hc`), C5aR1/2 and Cfb; pseudobulk disease/age effects in oligodendrocytes and microglia; co-expression with C4b inside oligodendrocytes and the genome-wide rank of each complement gene among C4b-correlated genes; human MS by lesion type; and the spatial AD dataset across spots and genotype/age. Ends with a cross-dataset summary and interpretation.
+
+Headline findings:
+- **C4b** rises in oligodendrocytes with age in every aging dataset (log2FC ≈ 2–3), is far higher in aged white than grey matter (77 % of aged WM oligodendrocytes C4b⁺, Kaya 2022) and up ~2.8 log2 in 5XFAD; in the Chen spatial data its spot-level correlates are the plaque-induced / DAM genes. **Human C4A/C4B cannot be quantified** in the MS snRNA-seq data (<25 UMIs in 17–66 k nuclei): the paralogs are near-identical and multi-mapping reads are discarded.
+- **C5a receptors are myeloid in all eight datasets**: C5ar1 in 6–38 % of microglia versus ≤0.9 % of oligodendrocytes (mouse) and ≤0.6 % (human MS). Microglial C5AR1 is highest at chronic active MS lesion edges (Absinta).
+- **C5**: ≤0.3 % of any mouse cell type. In human white matter a low glial C5 transcript exists (2–7 % of oligodendrocytes/astrocytes) and goes down, not up, in MS oligodendrocytes.
+- **C1q** is microglial; the 30 % "oligodendrocyte" detection seen only in droplet scRNA-seq is ambient RNA (1–6 % in snRNA-seq). It tracks C4b at the tissue level in the spatial AD data (rank 11–18 of ~14 k genes) but not inside oligodendrocyte nuclei.
+- **Cfb is silent** outside EAE (≤0.2 % of microglia, ≤0.1 % of oligodendrocytes in every AD/aging dataset), so it marks active inflammatory demyelination rather than the age-/amyloid-associated C4b⁺ state.
+- Genome-wide, the C4b⁺ oligodendrocyte program is the same everywhere (Serpina3n #1, then MHC-I / interferon genes, Klk6, Apod, Trf, Cd9); the only complement genes that join it are C4a and the membrane regulators Cd59a and Cr1l/Crry, i.e. protection against complement rather than complement receptors.
 
 ---
 

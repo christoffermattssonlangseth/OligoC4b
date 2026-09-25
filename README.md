@@ -48,6 +48,8 @@ Several notebooks now read dataset locations from environment variables instead 
 | `OLIGOC4B_XENIUM_AD_H5AD` | Processed Xenium AD AnnData (`Xenium_AD_mouse.h5ad`); optional, defaults to `../data/` |
 | `OLIGOC4B_VISIUM_AGING_H5AD` | Processed Visium aging AnnData (`visum_aging_brain.h5ad`); optional, defaults to `../data/` |
 | `OLIGOC4B_FALCAO_H5AD` | Falcão et al. 2018 EAE scRNA-seq AnnData (`falcao_et_al_2018.h5ad`); optional, defaults to `../data/` |
+| `OLIGOC4B_PUBLIC_RAW_DIR` | Folder with the downloaded public GEO files, one sub-folder per accession (`scripts/download_public_datasets.sh`) |
+| `OLIGOC4B_PUBLIC_PROCESSED_DIR` | Output folder for the harmonised public-dataset `.h5ad` files written by `build_public_datasets.ipynb` |
 | `OLIGOC4B_SC_AD_MOUSE_RAW_DIR` | Raw 10x HDF5 directory for the Park mouse AD dataset |
 | `OLIGOC4B_SNRNASEQ_AGING_RAW_DIR` | Raw matrix triplets for the aging mouse snRNA-seq dataset |
 | `OLIGOC4B_XENIUM_AD_RAW_DIR` | Xenium AD output directory |
@@ -75,6 +77,8 @@ Notebooks are prefixed by role so it is obvious which ones to run first:
 | `notebooks/analysis_sc_EAE_falcao_mouse.ipynb` | analysis | scRNA-seq analysis of mouse EAE data from Falcao et al. |
 | `notebooks/analysis_sc_jäkel_human.ipynb` | analysis | Human oligodendrocyte analysis using the Jäkel et al. dataset |
 | `notebooks/analysis_spatial_complement_C5_C1q_Cfb.ipynb` | analysis | C5 / C5a receptors, C1q and Cfb across all three spatial datasets, in relation to C4b⁺ oligodendrocytes |
+| `notebooks/build_public_datasets.ipynb` | build | Eight public GEO datasets (mouse AD, aging, white-matter aging, human MS, spatial AD) → harmonised `.h5ad` via `scripts/oligoc4b_public.py` |
+| `notebooks/analysis_public_datasets_complement.ipynb` | analysis | Complement panel (C4b, C1q, C3, C5/Hc, C5aR1/2, Cfb) across the public datasets: cell types, disease/age effects, C4b co-expression in oligodendrocytes |
 
 For plain-language, per-notebook summaries written for collaborators, see [`NOTEBOOKS.md`](NOTEBOOKS.md).
 
@@ -112,6 +116,38 @@ Current readout (see the notebook's interpretation cell and `NOTEBOOKS.md`):
 - C5aR1 is confined to microglia and infiltrating myeloid cells (confirmed in sorted Falcão et al. single cells), yet C5aR1⁺ cells are about twice as enriched within 30 µm of C4b-high oligodendrocytes as of C4b-negative ones across EAE samples. This survives matching for lesion distance and restricting to non-lesion tissue. Cfb⁺ and C3aR1⁺ cells show the same pattern.
 - C1q (microglial) rises with age together with C4b in Visium and is among the top C4b-correlated genes in white matter; its spatial coupling to C4b⁺ oligodendrocytes in the AD sections is weak.
 - Cfb is strongly induced in EAE lesion myeloid cells and essentially absent in the aging brain. It is also the one panel gene with a modest intrinsic component in disease-associated oligodendrocytes in the sorted single-cell data.
+
+## Public Datasets for the Wider Complement Exploration
+
+To test whether the C4b / complement picture generalises, eight public datasets were added (all whole-transcriptome; seven single-cell / single-nucleus, one spatial):
+
+| Dataset | GEO | Species, modality | Comparison |
+| --- | --- | --- | --- |
+| Park et al. 2023, AD hippocampus | GSE224398 | mouse scRNA-seq | App^NL-G-F^ vs control, 1/3/6 mo |
+| Aging snRNA-seq, hippocampus + caudate putamen | GSE212576 | mouse snRNA-seq | old vs young |
+| Ximerakis et al. 2019, whole brain | GSE129788 | mouse scRNA-seq | old vs young |
+| Kaya et al. 2022, aged white vs grey matter | GSE202579 | mouse scRNA-seq | WM vs GM at 24 mo (WT and Rag1-KO) |
+| Zhou et al. 2020, 5XFAD | GSE140511 | mouse snRNA-seq | 5XFAD vs non-Tg, 7 and 15 mo, ± Trem2-KO |
+| Chen et al. 2020, Spatial Transcriptomics | GSE152506 | mouse ST | App^NL-G-F^ vs WT, 3–18 mo |
+| Jäkel et al. 2019, MS white matter | GSE118257 | human snRNA-seq | MS lesion types vs control |
+| Absinta et al. 2021, chronic active MS | GSE180759 | human snRNA-seq | lesion edge / core / periplaque vs control |
+
+Workflow:
+
+```bash
+OLIGOC4B_PUBLIC_RAW_DIR=/path/to/raw sh scripts/download_public_datasets.sh   # ~5 GB from GEO, parallel + resumable
+# then run notebooks/build_public_datasets.ipynb followed by notebooks/analysis_public_datasets_complement.ipynb
+```
+
+`scripts/oligoc4b_public.py` holds one loader per dataset and produces a harmonised `obs` (`dataset`, `species`, `modality`, `sample`, `group`, `group_ref`, `cell_type_coarse`, `cell_type_original`). Author cell-type labels are used where deposited (Ximerakis, Jäkel, Absinta); otherwise clusters are annotated from marker-gene scores.
+
+What the public data add to the in-house picture (details in `analysis_public_datasets_complement.ipynb` and `NOTEBOOKS.md`):
+
+- C4b in oligodendrocytes rises with age in every aging dataset and in 5XFAD, and is highest in aged white matter; its spot-level correlates in spatial AD data are the plaque-induced / DAM genes.
+- C5a receptors are myeloid in all eight datasets and essentially absent from oligodendrocytes, in mouse and in human MS. C5 transcript is near-zero in mouse tissue; human white matter has a low glial C5 signal that decreases in MS oligodendrocytes.
+- C1q signal inside oligodendrocytes is ambient RNA in droplet scRNA-seq and near-absent in nuclei; Cfb is silent in every AD and aging dataset, so it is specific to inflammatory demyelination (EAE).
+- The complement genes that do join the C4b⁺ oligodendrocyte program are C4a and the membrane regulators Cd59a and Cr1l (Crry), not receptors.
+- Human C4A/C4B cannot be quantified from standard Cell Ranger output because the paralogs are near-identical; a multi-mapping-aware re-quantification would be needed.
 
 ## Reproducibility Notes
 
