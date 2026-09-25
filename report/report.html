@@ -1,0 +1,306 @@
+<!doctype html><html><head><meta charset='utf-8'><title>OligoC4b complement report</title><style>
+@page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+body { font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #1a1a1a; max-width: 178mm; margin: 0 auto; }
+h1 { font-size: 20pt; margin: 0 0 4pt 0; }
+h2 { font-size: 14pt; margin: 22pt 0 6pt 0; border-bottom: 1px solid #bbb; padding-bottom: 2pt; page-break-after: avoid; }
+h3 { font-size: 11.5pt; margin: 14pt 0 4pt 0; page-break-after: avoid; }
+p { margin: 5pt 0; }
+ul, ol { margin: 4pt 0 6pt 0; padding-left: 18pt; }
+li { margin: 2pt 0; }
+table { border-collapse: collapse; font-size: 9pt; margin: 6pt 0 10pt 0; width: 100%; page-break-inside: avoid; }
+th, td { border: 1px solid #ccc; padding: 3pt 5pt; text-align: left; vertical-align: top; }
+th { background: #f0f0f0; }
+figure { margin: 10pt 0 12pt 0; page-break-inside: avoid; text-align: center; }
+figure img { max-width: 100%; max-height: 118mm; }
+figcaption { font-size: 9pt; color: #444; text-align: left; margin-top: 4pt; }
+.subtitle { color: #555; font-size: 11pt; margin-bottom: 14pt; }
+.box { background: #f6f7f9; border-left: 3px solid #4a6fa5; padding: 8pt 10pt; margin: 8pt 0 12pt 0; }
+.pagebreak { page-break-before: always; }
+code { font-size: 9pt; background: #f3f3f3; padding: 0 2pt; }
+</style></head><body><h1>Complement beyond C4b in oligodendrocytes: C5, C5a receptors, C1q and Cfb</h1>
+<p class="subtitle">OligoC4b project · in-house spatial data plus sixteen public datasets · 2026-09-25</p>
+
+<div class="box">
+<p><strong>The question.</strong> When checking C4b in the spatial datasets, had we also looked at C5 and the C5 receptors, and at C1q and Cfb (complement factor B)?</p>
+<p><strong>The short answer.</strong> C4b⁺ oligodendrocytes do not express C5 or the C5a receptors themselves, in any of nineteen datasets across mouse and human, aging, AD, EAE, toxic demyelination and MS. The C5a receptor C5aR1 sits on microglia and infiltrating myeloid cells, and those cells are about twice as enriched within 30 µm of C4b-high oligodendrocytes in EAE, also after matching for lesion distance. Local C5 transcript is near-zero in mouse tissue and present only at low, non-responsive levels in human glia, so the C5/C5a arm has to be assessed at protein level. C1q is microglial and tracks C4b with age at tissue level. Cfb is induced only in active inflammatory demyelination (EAE, chronic active MS lesion microglia) and is silent in aging and amyloid models. The complement genes that do join the C4b⁺ oligodendrocyte program are C4a and the membrane regulators Cd59a and Cr1l/Crry, i.e. protection against complement deposition rather than complement receptors.</p>
+</div>
+<h2>1. Data</h2>
+<h3>In-house spatial datasets</h3>
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Platform</th>
+<th>Design</th>
+<th>Complement genes on the panel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Xenium mouse AD (TgCRND8 time course)</td>
+<td>Xenium, 347 genes</td>
+<td>wildtype vs TgCRND8, 2.5 / 5.7 / 13–18 months, one section each</td>
+<td>C4b, C4a, C1qa, C1qb, C1qc, C3</td>
+</tr>
+<tr>
+<td>Xenium mouse EAE (RR and chronic)</td>
+<td>Xenium 5K panel</td>
+<td>107 samples, EAE vs control, lesion-distance annotation</td>
+<td>C4b, C3, C3ar1, Hc (C5), C5ar1, C5ar2, Cfb, C6, Cr1l, Cd55, Cd59a</td>
+</tr>
+<tr>
+<td>Visium aging mouse brain</td>
+<td>Visium</td>
+<td>young / mid / old, 6 sections</td>
+<td>whole transcriptome</td>
+</tr>
+<tr>
+<td>Falcão et al. 2018 EAE scRNA-seq (Smart-seq2)</td>
+<td>sorted single cells</td>
+<td>oligodendrocyte lineage + microglia, control vs EAE</td>
+<td>whole transcriptome</td>
+</tr>
+</tbody>
+</table>
+<p>Note that mouse C5 is annotated as <code>Hc</code>. It is on the 5K panel but not on the 347-gene AD panel, so C5, C5aR1/2 and Cfb cannot be assessed in the Xenium AD data at all.</p>
+<h3>Public datasets added for this question</h3>
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Accession</th>
+<th>Species, modality</th>
+<th>Comparison</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Park 2023, AD hippocampus</td>
+<td>GSE224398</td>
+<td>mouse scRNA-seq</td>
+<td>App^NL-G-F^ vs control, 1/3/6 mo</td>
+</tr>
+<tr>
+<td>Aging snRNA-seq, hippocampus + caudate putamen</td>
+<td>GSE212576</td>
+<td>mouse snRNA-seq</td>
+<td>old vs young</td>
+</tr>
+<tr>
+<td>Ximerakis 2019, whole brain</td>
+<td>GSE129788</td>
+<td>mouse scRNA-seq</td>
+<td>old vs young</td>
+</tr>
+<tr>
+<td>Kaya 2022, aged white vs grey matter</td>
+<td>GSE202579</td>
+<td>mouse scRNA-seq</td>
+<td>WM vs GM at 24 mo, WT and Rag1-KO</td>
+</tr>
+<tr>
+<td>Zhou 2020, 5XFAD</td>
+<td>GSE140511</td>
+<td>mouse snRNA-seq</td>
+<td>5XFAD vs non-Tg, 7 and 15 mo, ± Trem2-KO</td>
+</tr>
+<tr>
+<td>Chen 2020, Spatial Transcriptomics</td>
+<td>GSE152506</td>
+<td>mouse ST</td>
+<td>App^NL-G-F^ vs WT, 3–18 mo</td>
+</tr>
+<tr>
+<td>LPC + cuprizone corpus callosum</td>
+<td>GSE293850</td>
+<td>mouse snRNA-seq</td>
+<td>LPC / cuprizone vs controls</td>
+</tr>
+<tr>
+<td>Serpina3n-cKO + cuprizone</td>
+<td>GSE319903</td>
+<td>mouse snRNA-seq</td>
+<td>cuprizone vs normal diet, ± Serpina3n cKO</td>
+</tr>
+<tr>
+<td>Jäkel 2019, MS white matter</td>
+<td>GSE118257</td>
+<td>human snRNA-seq</td>
+<td>lesion types vs control</td>
+</tr>
+<tr>
+<td>Absinta 2021, chronic active MS</td>
+<td>GSE180759</td>
+<td>human snRNA-seq</td>
+<td>lesion edge / core / periplaque vs control</td>
+</tr>
+<tr>
+<td>Schirmer 2019, MS lesions</td>
+<td>UCSC Cell Browser</td>
+<td>human snRNA-seq</td>
+<td>lesion types vs control</td>
+</tr>
+<tr>
+<td>Lerma-Martin 2024, subcortical MS lesions</td>
+<td>GSE279180 / GSE279181</td>
+<td>human snRNA-seq + Visium</td>
+<td>chronic active / inactive vs control</td>
+</tr>
+<tr>
+<td>Senescent-like glia in MS, 2025</td>
+<td>GSE277435</td>
+<td>human Visium</td>
+<td>MS subtypes (no controls)</td>
+</tr>
+<tr>
+<td>Leng 2021, SFG + entorhinal cortex</td>
+<td>GSE147528</td>
+<td>human snRNA-seq</td>
+<td>Braak 6 vs Braak 0</td>
+</tr>
+<tr>
+<td>Sadick 2022, PFC astrocyte/oligodendrocyte-enriched</td>
+<td>GSE167494</td>
+<td>human snRNA-seq</td>
+<td>AD vs non-symptomatic</td>
+</tr>
+</tbody>
+</table>
+<p>About one million cells and nuclei in total. All public data were processed with one pipeline (QC, normalisation, clustering) and given a shared ten-level cell-type label. Author annotations were used where deposited; otherwise clusters were annotated from marker-gene scores. Oligodendrocyte and microglia labels, the only ones the analyses rely on, were validated against Plp1 (96–100 %) and Hexb (92–100 %) in every mouse dataset. Details are in <code>docs/cell_type_annotation.md</code> in the repository.</p>
+<h2>2. What is measurable where</h2>
+<p>Xenium is targeted, so panel content is the first result. Beyond that, one technical finding applies to all human data: <strong>human C4A and C4B cannot be quantified from standard Cell Ranger / Space Ranger output.</strong> The two paralogs are near-identical, multi-mapping reads are discarded, and every human dataset ends up with 5–470 UMIs for C4A + C4B in 17–107 k nuclei (compared with 10⁵–10⁶ for PLP1). Human C4 therefore needs a multi-mapping-aware re-quantification from reads before anything can be said about it.</p>
+<table>
+<thead>
+<tr>
+<th>Gene</th>
+<th>Xenium AD</th>
+<th>Xenium EAE</th>
+<th>Visium / all public mouse data</th>
+<th>Public human data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C4b</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>not quantifiable (paralogs)</td>
+</tr>
+<tr>
+<td>C1qa / C1qb / C1qc</td>
+<td>✓</td>
+<td>✗</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>C3, C3ar1</td>
+<td>C3 only</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>C5 (Hc)</td>
+<td>✗</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>C5ar1 / C5ar2</td>
+<td>✗</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Cfb</td>
+<td>✗</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Results</h2>
+<h3>3.1 C4b itself, as the reference</h3>
+<p>C4b in oligodendrocytes rises with age in every aging dataset (pseudobulk log2 fold change about 2–3, significant in the aging snRNA-seq and Ximerakis sets), is far higher in aged white than grey matter (77 % of aged white-matter oligodendrocytes are C4b⁺ in Kaya 2022), is up about 2.8 log2 in 5XFAD oligodendrocytes, and rises with toxic demyelination (8 % of oligodendrocyte nuclei in controls, 16 % after cuprizone, 34 % after LPC). In the Chen spatial AD data its correlates across spots are the plaque-induced and DAM genes (C4a, Cst7, Gfap, Tyrobp, Trem2, Apoe, C1qa–c, Serpina3n). Inside oligodendrocytes, Serpina3n is the top C4b-correlated gene in every dataset with a clean C4b⁺ population, followed by the MHC-I / interferon module (H2-D1, B2m, H2-K1, Ifi27, Irf9, Stat3), Klk6, Apod, Trf, Cd9 and Cldn11: the same program as in the in-house data.</p>
+<figure>
+<p><img alt="" src="figures/inhouse_xenium_ad_course.png" /></p>
+<figcaption>Xenium AD: mean expression of C4b, C1q genes, C3 and C4a over age in oligodendrocytes, microglia and astrocytes, wildtype (blue) vs TgCRND8 (orange). One section per point.</figcaption>
+</figure>
+<figure>
+<p><img alt="" src="figures/public_log2fc_oligodendrocyte.png" /></p>
+<figcaption>Public datasets, oligodendrocytes: pseudobulk log2 fold change of each complement gene for the disease / aged / demyelinated group versus its reference. Stars mark Mann–Whitney p &lt; 0.05 across samples; unstarred values are descriptive. Human C4b cells are empty because C4A/C4B are not quantifiable.</figcaption>
+</figure>
+<h3>3.2 C5 (Hc in mouse)</h3>
+<p>Mouse: C5 transcript is detected in at most 0.5 % of cells of any type in Xenium EAE, at most 0.3 % in all eight mouse single-cell datasets and about 1–2 % of Visium / ST spots, with no disease, age or demyelination change. Human: a low glial C5 transcript is present in every human dataset (2–11 % of oligodendrocytes, 4–17 % of astrocytes and OPCs), unchanged across Braak stages and unchanged or slightly lower in MS lesions. C5 is plasma-derived; if C5a signalling matters here it has to be measured as protein (C5a, C5b-9 deposition), not as RNA.</p>
+<h3>3.3 C5a receptors</h3>
+<p>C5aR1 is myeloid in all nineteen datasets: 20–45 % of microglia, macrophages and infiltrating myeloid cells in EAE, 6–38 % of mouse microglia in the public data (highest in aged white matter), 3–17 % of human microglia nuclei, and at most 1 % of oligodendrocytes anywhere, including C4b⁺ disease-associated oligodendrocytes. Sorted single cells (Falcão) confirm this is not spatial spill-over: 14 of 700 C4b⁺ mature oligodendrocytes co-detect C5ar1. C5aR2 follows the same pattern at lower levels.</p>
+<p>Per-cell C5ar1 in myeloid cells is flat from lesion core to &gt; 500 µm in EAE, so the 3-fold tissue-level gradient toward lesions is recruitment of C5aR1⁺ cells, not receptor up-regulation. In human MS, microglial C5AR1 peaks at chronic active lesion edges (Absinta 14.5 % vs 4.5 % in control white matter; Lerma-Martin 25 % vs 8 %) and the matched Lerma-Martin Visium shows 8.5-fold higher C5AR1 in chronic active lesion spots than in control white matter.</p>
+<figure>
+<p><img alt="" src="figures/inhouse_eae_celltype_dotplot.png" /></p>
+<figcaption>Xenium EAE: complement panel by cell type. C5ar1, C5ar2, Cfb and C3ar1 are confined to myeloid and immune populations; C4b is highest in disease-associated oligodendrocytes and astrocytes.</figcaption>
+</figure>
+<figure>
+<p><img alt="" src="figures/public_detection_oligodendrocyte.png" /></p>
+<figcaption>Public datasets: fraction of oligodendrocytes detecting each complement gene. C5 (Hc), C5ar1, C5ar2 and Cfb stay at or below 1 % in every dataset; the 30 % C1q detection in the two droplet scRNA-seq datasets (Park, Kaya) is ambient microglial RNA, absent in nuclei.</figcaption>
+</figure>
+<figure>
+<p><img alt="" src="figures/public_detection_microglia.png" /></p>
+<figcaption>Public datasets: the same for microglia. C1q is near-universal in mouse microglia; C5ar1 reaches 6–38 %; Cfb is essentially absent outside active demyelination.</figcaption>
+</figure>
+<p><strong>Spatial relationship to C4b⁺ oligodendrocytes.</strong> In 87 EAE samples, C5aR1⁺ cells are enriched within 30 µm of C4b-high oligodendrocytes relative to C4b-negative oligodendrocytes (median ratio 2.2, paired Wilcoxon p ≈ 4×10⁻⁷; 2.0 for C5aR1⁺ myeloid cells; 1.5 for C5aR2⁺; 1.7 for Cfb⁺; 1.8 for C3aR1⁺). This is not just lesion proximity: stratifying source oligodendrocytes by lesion distance gives a median ratio of 1.96 (76 samples, 84 % above 1), and restricting to non-lesion tissue gives 2.2. Within 50–200 µm of a lesion the ratio is about 1, because everything there is myeloid-dense; at 200–500 µm and beyond it is 1.7–2.3, so away from lesions C4b-high oligodendrocytes mark myeloid-rich micro-niches.</p>
+<figure>
+<p><img alt="" src="figures/inhouse_eae_neighbourhood_ratio.png" /></p>
+<figcaption>Xenium EAE: per-sample ratio of the fraction of receptor-positive neighbours around C4b-high versus C4b-negative oligodendrocytes (30 µm radius). Values above the dashed line mean enrichment around C4b-high cells.</figcaption>
+</figure>
+<figure>
+<p><img alt="" src="figures/inhouse_eae_lesion_matched.png" /></p>
+<figcaption>The same ratio after stratifying the source oligodendrocytes by their distance from the nearest lesion. The enrichment persists far from lesions.</figcaption>
+</figure>
+<figure>
+<p><img alt="" src="figures/inhouse_eae_spatial_peak.png" /></p>
+<figcaption>Xenium EAE, one chronic-peak sample: C4b, Hc (C5), C5ar1, C5ar2, Cfb and C3. The empty Hc map is real: there is essentially no local C5 transcript.</figcaption>
+</figure>
+<h3>3.4 C1q</h3>
+<p>C1q is microglial in every dataset (76–100 % of mouse microglia, 21–62 % of human microglia nuclei, higher in MS lesions than control white matter). In the Visium aging data all three C1q genes rise with age in parallel with C4b and rank among the top 50 of 16,000 genes correlated with C4b in white-matter spots; in the Chen spatial AD data they rank 11–18 of about 14,000. Inside oligodendrocyte nuclei the coupling is weak (rank 233–482 in 5XFAD, beyond 2,800 in aging). In the Xenium AD sections, C1q⁺ microglia are enriched around C4b-high oligodendrocytes only in the two oldest sections, whereas C3⁺ astrocytes are about 3-fold enriched in every section. Nuclei from active demyelinating lesions (LPC, cuprizone) carry microglial ambient RNA, so C1q, Apoe and Ctsd co-varying with C4b in those "oligodendrocytes" should not be read as intrinsic expression.</p>
+<h3>3.5 Cfb</h3>
+<p>Cfb is a lesion-associated myeloid gene. In EAE it is detected in 67 % of lesion macrophages and 50 % of foamy myeloid cells, is induced about 10-fold in EAE microglia (pseudobulk 0.04 → 0.44, p &lt; 10⁻⁴), and shows a steep gradient toward lesions. In the sorted Falcão data it is the one panel gene with a modest intrinsic oligodendrocyte component: detected in 13 % of EAE-cluster mature oligodendrocytes versus 2 % of controls, about 5-fold enriched in C4b⁺ cells. Everywhere else it is silent: at most 0.2 % of microglia and 0.1 % of oligodendrocytes in every AD and aging dataset, 0.4 % of Visium spots, and in human MS only chronic-active-lesion microglia show it (2.8 % vs 0.8 %). Cfb therefore marks active inflammatory demyelination rather than the age- or amyloid-associated C4b⁺ state.</p>
+<figure>
+<p><img alt="" src="figures/inhouse_eae_pseudobulk.png" /></p>
+<figcaption>Xenium EAE: per-sample pseudobulk expression by cell type, EAE (orange) vs control (blue). Cfb and C3 are induced in microglia and macrophages; C5ar1 is unchanged per cell.</figcaption>
+</figure>
+<h3>3.6 Which complement genes do join the C4b⁺ oligodendrocyte program?</h3>
+<p>Ranking every gene by its correlation with C4b inside oligodendrocytes, no complement receptor, Cfb or C5 reaches the top 1,000 in any dataset. The complement genes that do are C4a (rank 1 in the spatial AD data, 4-fold detection enrichment in aged white matter) and the membrane regulators Cd59a (ranks 117–740) and Cr1l/Crry (ranks about 1,100–1,250). C4b⁺ oligodendrocytes up-regulate protection against complement deposition, not complement receptors.</p>
+<figure>
+<p><img alt="" src="figures/public_c4b_correlation.png" /></p>
+<figcaption>Spearman correlation of each complement gene with C4b inside oligodendrocytes, per mouse dataset. Serpina3n is included as the positive control of the program.</figcaption>
+</figure>
+<figure>
+<p><img alt="" src="figures/public_log2fc_microglia.png" /></p>
+<figcaption>Public datasets, microglia: pseudobulk log2 fold change per contrast. C5ar1 tends to rise in lesion-associated microglia (LPC, human MS); C3 rises in aged white matter and falls in AD microglia; Cfb is absent outside demyelination.</figcaption>
+</figure>
+<h2>4. Integrated oligodendrocyte atlas</h2>
+<p><em>Section pending: the integrated atlas is being computed (scVI/scANVI over ~190,000 oligodendrocytes from twelve datasets) and will be added when finished.</em></p>
+<h2>5. Caveats</h2>
+<ol>
+<li>The Xenium AD time course has one section per genotype × age; those trends are descriptive.</li>
+<li>The EAE neighbourhood enrichments use the existing lesion-distance calls; bins closer than 50 µm had too few C4b-negative oligodendrocytes to test.</li>
+<li>Coarse cell-type annotation of eight public datasets is marker-based; only oligodendrocyte and microglia labels were validated. Park's OPC and neuron labels are unreliable, Sadick's myeloid cells fell under "Immune", and the Serpina3n-cKO cuprizone set has no usable C4b⁺ oligodendrocyte population.</li>
+<li>Pseudobulk tests are underpowered where a dataset has fewer than three replicates per group (Park, LPC/cuprizone, Serpina3n-cKO, several human sets); their fold changes are descriptive.</li>
+<li>Kaya's 10x libraries are all 24 months old, so that comparison is white versus grey matter in aged brain, not young versus aged.</li>
+<li>Human C4A/C4B are not quantifiable in any of the eight human datasets; a multi-mapping-aware re-quantification (STARsolo with EM, or a merged C4A/C4B reference) is needed.</li>
+<li>Human microglia validation in nuclei relies on author labels or on C1Q/C3 detection, because HEXB is a weak marker in snRNA-seq.</li>
+</ol>
+<h2>6. Suggested next steps</h2>
+<ul>
+<li><strong>Protein.</strong> C5a and C5b-9 deposition around C4b⁺ oligodendrocytes in EAE and aged white matter, since C5 cannot be read from RNA.</li>
+<li><strong>Human C4.</strong> Re-quantify C4A/C4B from reads in the Lerma-Martin and Sadick data (the two deepest human sets) with a multi-mapping-aware method.</li>
+<li><strong>Ligand–receptor and niche modelling</strong> between C4b⁺ oligodendrocytes and the C5aR1⁺ myeloid cells in their 30 µm neighbourhood (Csf1 and Il33 are already among the C4b correlates), on the Xenium EAE and Lerma-Martin data.</li>
+<li><strong>Cross-dataset predictive signature</strong> of the C4b-high state with held-out validation, for a compact marker set to take to protein or spatial validation.</li>
+</ul>
+<h2>7. Where everything lives</h2>
+<p>Repository <code>OligoC4b</code> (GitHub, <code>christoffermattssonlangseth/OligoC4b</code>): executed notebooks with code and outputs under <code>notebooks/analysis/</code> (<code>analysis_spatial_complement_C5_C1q_Cfb</code>, <code>analysis_public_datasets_complement</code>, <code>analysis_oligodendrocyte_atlas</code>), the dataset loaders in <code>scripts/oligoc4b_public.py</code>, and plain-language documentation in <code>docs/</code> (<code>complement_findings.md</code>, <code>public_datasets.md</code>, <code>cell_type_annotation.md</code>, <code>notebooks.md</code>). Raw and processed data are on the group's analysis machine under <code>/Volumes/jamboree/OligoC4b_public/</code>.</p></body></html>
