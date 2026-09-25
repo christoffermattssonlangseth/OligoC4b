@@ -47,6 +47,7 @@ Several notebooks now read dataset locations from environment variables instead 
 | `OLIGOC4B_XENIUM_EAE_H5AD` | Processed Xenium EAE AnnData file |
 | `OLIGOC4B_XENIUM_AD_H5AD` | Processed Xenium AD AnnData (`Xenium_AD_mouse.h5ad`); optional, defaults to `../data/` |
 | `OLIGOC4B_VISIUM_AGING_H5AD` | Processed Visium aging AnnData (`visum_aging_brain.h5ad`); optional, defaults to `../data/` |
+| `OLIGOC4B_FALCAO_H5AD` | Falcão et al. 2018 EAE scRNA-seq AnnData (`falcao_et_al_2018.h5ad`); optional, defaults to `../data/` |
 | `OLIGOC4B_SC_AD_MOUSE_RAW_DIR` | Raw 10x HDF5 directory for the Park mouse AD dataset |
 | `OLIGOC4B_SNRNASEQ_AGING_RAW_DIR` | Raw matrix triplets for the aging mouse snRNA-seq dataset |
 | `OLIGOC4B_XENIUM_AD_RAW_DIR` | Xenium AD output directory |
@@ -108,9 +109,9 @@ C5 (`Hc`), its receptors and Cfb are therefore measurable in Xenium EAE and Visi
 Current readout (see the notebook's interpretation cell and `NOTEBOOKS.md`):
 
 - C4b⁺ oligodendrocytes do not express C5, C5ar1 or C5ar2 themselves in any dataset, and local C5 (`Hc`) transcription is near-absent in tissue, so the C5/C5a arm needs protein-level assessment.
-- C5aR1 is confined to microglia and infiltrating myeloid cells, yet C5aR1⁺ cells are about twice as enriched within 30 µm of C4b-high oligodendrocytes as of C4b-negative ones across 87 EAE samples. Cfb⁺ and C3aR1⁺ cells show the same pattern.
+- C5aR1 is confined to microglia and infiltrating myeloid cells (confirmed in sorted Falcão et al. single cells), yet C5aR1⁺ cells are about twice as enriched within 30 µm of C4b-high oligodendrocytes as of C4b-negative ones across EAE samples. This survives matching for lesion distance and restricting to non-lesion tissue. Cfb⁺ and C3aR1⁺ cells show the same pattern.
 - C1q (microglial) rises with age together with C4b in Visium and is among the top C4b-correlated genes in white matter; its spatial coupling to C4b⁺ oligodendrocytes in the AD sections is weak.
-- Cfb is strongly induced in EAE lesion myeloid cells and essentially absent in the aging brain.
+- Cfb is strongly induced in EAE lesion myeloid cells and essentially absent in the aging brain. It is also the one panel gene with a modest intrinsic component in disease-associated oligodendrocytes in the sorted single-cell data.
 
 ## Reproducibility Notes
 
