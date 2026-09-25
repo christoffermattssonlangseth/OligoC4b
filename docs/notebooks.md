@@ -24,8 +24,8 @@ Notebooks are prefixed by role so the run order is obvious from the file listing
 | `analysis_sc_EAE_falcao_mouse.ipynb` | analysis | reads processed h5ad |
 | `analysis_sc_jäkel_human.ipynb` | analysis | reads processed h5ad |
 | `analysis_spatial_complement_C5_C1q_Cfb.ipynb` | analysis | reads `Xenium_AD_mouse.h5ad`, the Xenium EAE h5ad and `visum_aging_brain.h5ad` |
-| `build_public_datasets.ipynb` | build | GEO downloads → eight harmonised public `.h5ad` files (`scripts/oligoc4b_public.py`) |
-| `analysis_public_datasets_complement.ipynb` | analysis | reads the eight public `.h5ad` files |
+| `build_public_datasets.ipynb` | build | GEO / UCSC downloads → sixteen harmonised public `.h5ad` files (`scripts/oligoc4b_public.py`) |
+| `analysis_public_datasets_complement.ipynb` | analysis | reads the sixteen public `.h5ad` files |
 
 ---
 
@@ -71,10 +71,10 @@ Answers the group-lead question *"have you checked C5 and the C5 receptors (and 
 Findings: see [`complement_findings.md`](complement_findings.md).
 
 ### `build_public_datasets.ipynb` — public GEO datasets → harmonised h5ad
-Runs the loaders in `scripts/oligoc4b_public.py` on files fetched by `scripts/download_public_datasets.sh` (Park 2023 AD hippocampus, aging snRNA-seq HIP/CP, Ximerakis 2019 aging brain, Kaya 2022 aged white vs grey matter, Zhou 2020 5XFAD, Chen 2020 Spatial Transcriptomics AD, Jäkel 2019 and Absinta 2021 human MS). Each object gets the same `obs` columns (`dataset`, `species`, `modality`, `sample`, `group`, `group_ref`, `cell_type_coarse`, `cell_type_original`) so the analysis notebook can loop over them. Prints a per-dataset summary and a cross-tab of author labels vs coarse types for checking the annotation.
+Runs the loaders in `scripts/oligoc4b_public.py` on files fetched by `scripts/download_public_datasets.sh`: mouse AD (Park 2023, Zhou 2020 5XFAD), mouse aging (aging snRNA-seq HIP/CP, Ximerakis 2019, Kaya 2022 aged WM vs GM), toxic demyelination (LPC + cuprizone, Serpina3n-cKO cuprizone), spatial AD (Chen 2020), human AD (Leng 2021, Sadick 2022), human MS snRNA-seq (Jäkel 2019, Absinta 2021, Schirmer 2019, Lerma-Martin 2024) and human MS Visium (Lerma-Martin 2024, senescent-glia 2025). Each object gets the same `obs` columns (`dataset`, `species`, `modality`, `sample`, `group`, `group_ref`, `cell_type_coarse`, `cell_type_original`) so the analysis notebook can loop over them. Prints a per-dataset summary and a cross-tab of author labels vs coarse types for checking the annotation.
 
 ### `analysis_public_datasets_complement.ipynb` — complement panel across the public datasets
-Same questions as the in-house complement notebook, asked of the eight public datasets: which cell types express C4b, C1q, C3, C5 (`Hc`), C5aR1/2 and Cfb; pseudobulk disease/age effects in oligodendrocytes and microglia; co-expression with C4b inside oligodendrocytes and the genome-wide rank of each complement gene among C4b-correlated genes; human MS by lesion type; and the spatial AD dataset across spots and genotype/age. Ends with a cross-dataset summary and interpretation.
+Same questions as the in-house complement notebook, asked of the sixteen public datasets: which cell types express C4b, C1q, C3, C5 (`Hc`), C5aR1/2 and Cfb; pseudobulk disease/age effects in oligodendrocytes and microglia; co-expression with C4b inside oligodendrocytes and the genome-wide rank of each complement gene among C4b-correlated genes; human MS by lesion type; and the spatial AD dataset across spots and genotype/age. Ends with a cross-dataset summary and interpretation.
 
 Findings: see [`complement_findings.md`](complement_findings.md).
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Download the public GEO datasets used by notebooks/build_public_datasets.ipynb (parallel, resumable).
+# Download the public datasets used by notebooks/build/build_public_datasets.ipynb (parallel, resumable, ~15 GB).
 # Usage: OLIGOC4B_PUBLIC_RAW_DIR=/path/to/raw sh scripts/download_public_datasets.sh
 BASE=${OLIGOC4B_PUBLIC_RAW_DIR:?set OLIGOC4B_PUBLIC_RAW_DIR to the download folder}
 mkdir -p $BASE
@@ -32,7 +32,21 @@ done
 for acc in GSE224398 GSE212576 GSE129788 GSE140511 GSE118257 GSE180759 GSE152506 GSE202579; do geo_gsm_meta $acc; done
 ) &
 wait
-for acc in GSE224398 GSE212576 GSE129788 GSE140511; do
+# ---- round 2: human AD, demyelination models, more human MS (snRNA-seq + Visium) ----
+get GSE147528 $S/GSE147nnn/GSE147528/suppl/GSE147528_RAW.tar &
+get GSE167494 $S/GSE167nnn/GSE167494/suppl/GSE167494_RAW.tar &
+get GSE293850 $S/GSE293nnn/GSE293850/suppl/GSE293850_RAW.tar &
+get GSE319903 $S/GSE319nnn/GSE319903/suppl/GSE319903_RAW.tar &
+get GSE279181 $S/GSE279nnn/GSE279181/suppl/GSE279181_RAW.tar &
+get GSE277435 $S/GSE277nnn/GSE277435/suppl/GSE277435_RAW.tar &
+get Schirmer2019 https://cells.ucsc.edu/ms/exprMatrix.tsv.gz &
+(
+for ct in OL OPC MG AS NEU EC BC; do get GSE279180 $S/GSE279nnn/GSE279180/suppl/GSE279180_ctype_${ct}.h5ad; done
+get Schirmer2019 https://cells.ucsc.edu/ms/meta.tsv
+for acc in GSE147528 GSE167494 GSE293850 GSE319903 GSE279180 GSE279181 GSE277435; do geo_gsm_meta $acc; done
+) &
+wait
+for acc in GSE224398 GSE212576 GSE129788 GSE140511 GSE147528 GSE167494 GSE293850 GSE319903 GSE279181 GSE277435; do
   d=$BASE/$acc; if [ -s $d/${acc}_RAW.tar ] && [ ! -f $d/.extracted ]; then (cd $d && tar -xf ${acc}_RAW.tar && touch .extracted && echo "extracted $acc"); fi
 done
 echo ALL_DONE

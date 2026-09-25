@@ -1,6 +1,6 @@
 # OligoC4b
 
-Notebook-based exploratory analysis of C4b-associated gene programs in disease-associated oligodendrocytes across single-cell, single-nucleus, Visium and Xenium datasets, extended to the wider complement system (C1q, C3, C5 and its receptors, Cfb) and to eight public datasets.
+Notebook-based exploratory analysis of C4b-associated gene programs in disease-associated oligodendrocytes across single-cell, single-nucleus, Visium and Xenium datasets, extended to the wider complement system (C1q, C3, C5 and its receptors, Cfb) and to sixteen public datasets (mouse AD, aging and demyelination models, spatial AD, human AD and MS).
 
 ## Layout
 
@@ -57,7 +57,7 @@ python scripts/check_notebooks.py   # before committing
 | `build/build_Visium_aging_mouse_brain.ipynb` | Visium aging mouse brain preprocessing → `visum_aging_brain.h5ad` |
 | `build/build_snRNAseq_aging_mouse_brain.ipynb` | snRNA-seq aging mouse brain preprocessing and C4b analysis |
 | `build/build_sc_AD_mouse_Park.ipynb` | scRNA-seq of the Park et al. mouse AD dataset |
-| `build/build_public_datasets.ipynb` | Eight public GEO datasets → harmonised `.h5ad` |
+| `build/build_public_datasets.ipynb` | Sixteen public datasets (GEO / UCSC) → harmonised `.h5ad` |
 | `analysis/analysis_Xenium_AD_compartment_identification.ipynb` | Spatial compartments and C4b in Xenium AD |
 | `analysis/analysis_Xenium_AD_further_exploration.ipynb` | C4b over the AD time course, mixed models |
 | `analysis/analysis_Visum_aging_age_associated_changes.ipynb` | Age-associated genes in Visium aging data |

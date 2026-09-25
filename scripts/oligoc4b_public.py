@@ -93,8 +93,11 @@ def raw_path(acc: str, *parts: str) -> str:
 
 
 def read_dense_table_sparse(path: str, sep: Optional[str] = None, chunksize: int = 2000, index_col: int = 0,
-                            dtype=np.float32) -> AnnData:
-    """Read a (genes x cells) or (cells x genes) dense text matrix in chunks into a sparse AnnData (cells x genes)."""
+                            dtype=np.float32, genes_in_rows: Optional[bool] = None) -> AnnData:
+    """Read a (genes x cells) or (cells x genes) dense text matrix in chunks into a sparse AnnData (cells x genes).
+
+    Orientation is guessed from which axis looks like gene symbols unless ``genes_in_rows`` is given explicitly.
+    """
     if sep is None:
         sep = "," if path.endswith(".csv") or path.endswith(".csv.gz") else "\t"
     blocks, index = [], []
@@ -110,7 +113,9 @@ def read_dense_table_sparse(path: str, sep: Optional[str] = None, chunksize: int
     def looks_like_genes(names):
         s = pd.Series(names[: min(len(names), 2000)])
         return s.str.match(r"^[A-Za-z][A-Za-z0-9\-\.]{1,15}$").mean() > 0.9 and not s.str.contains("_|-1$|:").mean() > 0.5
-    if looks_like_genes(rows) and not looks_like_genes(cols) or (X.shape[0] > X.shape[1] and looks_like_genes(rows)):
+    if genes_in_rows is None:
+        genes_in_rows = looks_like_genes(rows) and not looks_like_genes(cols) or (X.shape[0] > X.shape[1] and looks_like_genes(rows))
+    if genes_in_rows:
         X, obs_names, var_names = X.T.tocsr(), cols, rows
     else:
         obs_names, var_names = rows, cols
@@ -481,6 +486,244 @@ def load_kaya() -> AnnData:
     return finalize(ad, "Kaya2022_aged_WM_vs_GM_scRNA", "mouse", "scRNA", "GM")
 
 
+
+# --------------------------------------------------------------------------------------------------------------------
+# round 2: human AD, demyelination models, more human MS (single-nucleus and Visium)
+# --------------------------------------------------------------------------------------------------------------------
+
+def _concat_10x_triplets(acc: str, name_regex: str, obs_from_name, min_genes: int = 200) -> AnnData:
+    ads = []
+    for mtx in sorted(glob.glob(raw_path(acc, "GSM*_matrix.mtx.gz"))):
+        base = os.path.basename(mtx).replace("_matrix.mtx.gz", "")
+        m = re.match(name_regex, base)
+        if not m:
+            continue
+        a = read_10x_dir_any(mtx.replace("matrix.mtx.gz", ""))
+        sc.pp.filter_cells(a, min_genes=min_genes)
+        for k, v in obs_from_name(m).items():
+            a.obs[k] = v
+        ads.append(a)
+    return sc.concat(ads, join="outer", label="batch", index_unique="-")
+
+
+def load_leng_ad() -> AnnData:
+    """GSE147528 - Leng et al. 2021, human snRNA-seq of superior frontal gyrus (SFG) and entorhinal cortex (EC), Braak 0 / 2 / 6.
+
+    Deposited as *raw* Cell Ranger matrices (all barcodes), so cells are called here with a UMI / gene floor.
+    """
+    acc = "GSE147528"
+    gsm = parse_gsm_metadata(acc)
+    ads = []
+    for f in sorted(glob.glob(raw_path(acc, "GSM*_raw_gene_bc_matrices_h5.h5"))):
+        m = re.search(r"(GSM\d+)_([A-Z]+\d+)_", os.path.basename(f))
+        a = sc.read_10x_h5(f)
+        a.var_names_make_unique()
+        sc.pp.filter_cells(a, min_counts=500)
+        sc.pp.filter_cells(a, min_genes=300)
+        a.obs["gsm"], a.obs["sample"] = m.group(1), m.group(2)
+        ads.append(a)
+    ad = sc.concat(ads, join="outer", label="batch", index_unique="-")
+    braak_col = next((c for c in gsm.columns if c.startswith("braak")), None)
+    for col, new in [(braak_col, "braak"), ("brain_region", "region"), ("donor_id", "donor"), ("age_(years)", "age"), ("sex", "sex")]:
+        if col in gsm.columns:
+            ad.obs[new] = ad.obs["gsm"].map(gsm[col]).astype(str).values
+    ad.obs["braak"] = pd.to_numeric(ad.obs["braak"], errors="coerce")
+    ad.obs["group"] = np.where(ad.obs["braak"] >= 5, "AD", np.where(ad.obs["braak"] <= 2, "Ctrl", "intermediate"))
+    ad = standard_process(ad, "human", max_mt_pct=5, leiden_res=1.0)
+    ad = annotate_by_markers(ad, "human")
+    return finalize(ad, "Leng2021_AD_human_snRNA", "human", "snRNA", "Ctrl")
+
+
+def load_sadick_ad() -> AnnData:
+    """GSE167494 - Sadick et al. 2022, human snRNA-seq of prefrontal cortex enriched for astrocytes and oligodendrocytes, AD vs non-symptomatic.
+
+    Only the per-donor libraries (D1-D17) are used; the SOX9-sorted fractions (NS*/AD*_SOX9pos/neg) are left out.
+    """
+    acc = "GSE167494"
+    gsm = parse_gsm_metadata(acc)
+    def meta(m):
+        return {"gsm": m.group(1), "sample": m.group(2), "donor": m.group(2).split("-")[0]}
+    ad = _concat_10x_triplets(acc, r"(GSM\d+)_(D\d+(?:-\d+)?)$", meta)
+    ds_col = next((c for c in gsm.columns if "disease" in c), None)
+    for col, new in [(ds_col, "disease_state"), ("age", "age"), ("sex", "sex")]:
+        if col in gsm.columns:
+            ad.obs[new] = ad.obs["gsm"].map(gsm[col]).astype(str).values
+    ad.obs["group"] = np.where(ad.obs["disease_state"].str.contains("alzheimer|AD", case=False, regex=True), "AD", "Ctrl")
+    ad = standard_process(ad, "human", max_mt_pct=5, leiden_res=1.0)
+    ad = annotate_by_markers(ad, "human")
+    return finalize(ad, "Sadick2022_AD_human_astro_oligo_snRNA", "human", "snRNA", "Ctrl")
+
+
+def load_lpc_cuprizone() -> AnnData:
+    """GSE293850 - snRNA-seq of mouse corpus callosum after lysolecithin (LPC) or cuprizone demyelination vs saline controls."""
+    acc = "GSE293850"
+    gsm = parse_gsm_metadata(acc)
+    def meta(m):
+        return {"gsm": m.group(1), "sample": m.group(2)}
+    ad = _concat_10x_triplets(acc, r"(GSM\d+)_(\w+)$", meta)
+    for col in ["treatment", "tissue", "batch", "title"]:
+        if col in gsm.columns:
+            ad.obs[col + ("_gsm" if col == "batch" else "")] = ad.obs["gsm"].map(gsm[col]).astype(str).values
+    # two matched control types (saline for LPC, normal chow for cuprizone); both are untreated and pooled as 'Ctrl',
+    # the specific control is kept in obs['control_type'] / obs['treatment']
+    t = ad.obs["treatment"].str.lower()
+    ad.obs["group"] = np.where(t.str.contains("cupri|cpz"), "Cuprizone", np.where(t.str.contains("lpc|lyso"), "LPC", "Ctrl"))
+    ad.obs["control_type"] = np.where(t.str.contains("saline"), "saline", np.where(t.str.contains("chow"), "normal_chow", "treated"))
+    ad = standard_process(ad, "mouse", max_mt_pct=5, leiden_res=1.0)
+    ad = annotate_by_markers(ad, "mouse")
+    return finalize(ad, "LPC_Cuprizone_CC_snRNA_mouse", "mouse", "snRNA", "Ctrl")
+
+
+def load_serpina3n_cuprizone() -> AnnData:
+    """GSE319903 - snRNA-seq of mouse brain on normal diet vs cuprizone, in control and oligodendroglial Serpina3n cKO animals."""
+    acc = "GSE319903"
+    ads = []
+    for f in sorted(glob.glob(raw_path(acc, "GSM*_filtered_feature_bc_matrix.h5"))):
+        m = re.search(r"(GSM\d+)_(.+)_filtered_feature_bc_matrix", os.path.basename(f))
+        a = sc.read_10x_h5(f)
+        a.var_names_make_unique()
+        a.obs["gsm"], a.obs["sample"] = m.group(1), m.group(2)
+        ads.append(a)
+    ad = sc.concat(ads, join="outer", label="batch", index_unique="-")
+    ad.obs["diet"] = np.where(ad.obs["sample"].str.startswith("CPZ"), "Cuprizone", "Normal")
+    ad.obs["genotype"] = np.where(ad.obs["sample"].str.contains("cKO"), "Serpina3n_cKO", "Ctrl")
+    ad.obs["group"] = ad.obs["diet"].map({"Cuprizone": "Cuprizone", "Normal": "Ctrl"})
+    ad = standard_process(ad, "mouse", max_mt_pct=5, leiden_res=1.0)
+    ad = annotate_by_markers(ad, "mouse")
+    return finalize(ad, "Serpina3n_Cuprizone_snRNA_mouse", "mouse", "snRNA", "Ctrl")
+
+
+def load_lerma_martin_snrna() -> AnnData:
+    """GSE279180 - Lerma-Martin et al. 2024, human snRNA-seq of subcortical MS lesions (chronic active / inactive) and controls.
+
+    Uses the authors' per-cell-type h5ad files (already annotated); counts are taken from .raw or layers when present.
+    """
+    acc = "GSE279180"
+    ads = []
+    for f in sorted(glob.glob(raw_path(acc, "GSE279180_ctype_*.h5ad"))):
+        ct = re.search(r"ctype_(\w+)\.h5ad", f).group(1)
+        a = sc.read_h5ad(f)
+        # recover counts
+        X = None
+        for key in ["counts", "raw_counts", "count"]:
+            if key in a.layers:
+                X = a.layers[key]; break
+        if X is None and a.raw is not None:
+            X = a.raw[:, a.var_names].X if set(a.var_names) <= set(a.raw.var_names) else a.raw.X
+            if X.shape[1] != a.n_vars:
+                a = a.raw.to_adata()
+                X = a.X
+        if X is None:
+            X = a.X
+        b = AnnData(X=sp.csr_matrix(X), obs=a.obs.copy(), var=pd.DataFrame(index=a.var_names))
+        b.obs["ctype_file"] = ct
+        ads.append(b)
+    ad = sc.concat(ads, join="outer", label="batch", index_unique="-")
+    # counts or normalised? treat as counts if integers
+    d = ad.X.data[:100000]
+    is_counts = np.allclose(d, np.round(d))
+    cols = {c.lower(): c for c in ad.obs.columns}
+    sample_col = next((cols[c] for c in ["sample", "sample_id", "sampleid", "orig.ident", "library", "donor_id", "patient", "case"] if c in cols), None)
+    lesion_col = next((cols[c] for c in ["lesion_type", "lesion", "condition", "lesion type", "group", "pathology", "disease", "type"] if c in cols), None)
+    # obs: patient_id, sample_id, condition (Control/MS), lesion_type (Ctrl/CA/CI), subtype (e.g. OL_Homeo1, OL_Dis1)
+    ct_col = next((cols[c] for c in ["subtype", "cell_type", "celltype", "cell_type_fine", "annotation", "ctype", "cell_types"] if c in cols), None)
+    ad.obs["sample"] = ad.obs[sample_col].astype(str) if sample_col else "unknown"
+    ad.obs["condition_original"] = ad.obs[lesion_col].astype(str) if lesion_col else "unknown"
+    ad.obs["cell_type_original"] = ad.obs[ct_col].astype(str) if ct_col else ad.obs["ctype_file"].astype(str)
+    ad.obs["group"] = np.where(ad.obs["condition_original"].str.contains("ctr|control|ctrl|healthy", case=False), "Ctrl", "MS")
+    if is_counts:
+        ad = standard_process(ad, "human", max_mt_pct=None, leiden_res=1.0, do_cluster=False)
+    else:
+        ad.layers["counts"] = ad.X.copy()
+        ad.uns["note"] = "deposited matrix was not integer counts; used as-is"
+    # coarse type from the per-cell-type file name (OL / OPC / MG / AS / NEU / EC / BC), which is unambiguous
+    file_rules = {r"^ol$": "Oligodendrocyte", r"^opc$": "OPC", r"^mg$": "Microglia", r"^as$": "Astrocyte", r"^neu$": "Neuron",
+                  r"^ec$": "Endothelial", r"^bc$": "Immune (lymphoid/myeloid)"}
+    ad.obs["cell_type_coarse"] = map_original_to_coarse(ad.obs["ctype_file"], file_rules)
+    return finalize(ad, "LermaMartin2024_MS_human_snRNA", "human", "snRNA", "Ctrl")
+
+
+def _load_visium_geo(acc: str, dataset: str, lesion_key_candidates=("lesion_type", "lesion type", "case_diagnosis", "disease_state", "pathology")) -> AnnData:
+    """Generic loader for GEO-deposited Visium runs: per-sample 10x triplets + tissue_positions + scalefactors, lesion type from GSM metadata."""
+    gsm = parse_gsm_metadata(acc)
+    ads = []
+    for mtx in sorted(glob.glob(raw_path(acc, "GSM*_matrix.mtx.gz"))):
+        base = os.path.basename(mtx).replace("_matrix.mtx.gz", "")
+        gsm_id, name = base.split("_", 1)
+        a = read_10x_dir_any(mtx.replace("matrix.mtx.gz", ""))
+        a.obs["gsm"], a.obs["sample"] = gsm_id, name
+        pos = glob.glob(raw_path(acc, f"{base}_tissue_positions*")) or glob.glob(raw_path(acc, f"{gsm_id}_*tissue_positions*"))
+        if pos:
+            tp = pd.read_csv(pos[0], header=None if "list" in pos[0] else 0)
+            if tp.shape[1] >= 6:
+                tp.columns = ["barcode", "in_tissue", "array_row", "array_col", "pxl_row", "pxl_col"][: tp.shape[1]] if tp.columns[0] != "barcode" else tp.columns
+                tp = tp.set_index("barcode")
+                tp.index = tp.index.astype(str)
+                common = a.obs_names.intersection(tp.index)
+                a = a[common].copy()
+                a.obsm["spatial"] = tp.loc[a.obs_names, ["pxl_col", "pxl_row"]].to_numpy(dtype=float)
+                a.obs["in_tissue"] = tp.loc[a.obs_names, "in_tissue"].values
+                if "in_tissue" in a.obs:
+                    a = a[a.obs["in_tissue"].astype(int) == 1].copy()
+        ads.append(a)
+    ad = sc.concat(ads, join="outer", label="batch", index_unique="-")
+    lesion_col = next((c for c in gsm.columns if c in lesion_key_candidates), None)
+    for col in gsm.columns:
+        if col in ("title",):
+            continue
+        ad.obs["gsm_" + col] = ad.obs["gsm"].map(gsm[col]).astype(str).values
+    ad.obs["condition_original"] = ad.obs["gsm"].map(gsm[lesion_col]).astype(str).values if lesion_col else "unknown"
+    ad.obs["group"] = np.where(ad.obs["condition_original"].str.contains("ctr|control|ctrl|non-neuro|healthy", case=False), "Ctrl", "MS")
+    ad = standard_process(ad, "human", min_genes=100, max_mt_pct=None, do_cluster=False)
+    return finalize(ad, dataset, "human", "spatial", "Ctrl")
+
+
+def load_lerma_martin_visium() -> AnnData:
+    """GSE279181 - Lerma-Martin et al. 2024, Visium of subcortical MS lesions (chronic active / inactive) and controls."""
+    return _load_visium_geo("GSE279181", "LermaMartin2024_MS_human_Visium")
+
+
+def load_senescent_glia_visium() -> AnnData:
+    """GSE277435 - 'Inflammation-induced senescent-like glia' 2025, Visium of MS and control brain."""
+    return _load_visium_geo("GSE277435", "SenescentGlia2025_MS_human_Visium")
+
+
+def load_schirmer() -> AnnData:
+    """Schirmer et al. 2019 (Nature), human snRNA-seq of MS lesions and controls; matrix and metadata from the UCSC Cell Browser (cells.ucsc.edu/ms)."""
+    acc = "Schirmer2019"
+    ad = read_dense_table_sparse(raw_path(acc, "exprMatrix.tsv.gz"), sep="\t", genes_in_rows=True)
+    # gene ids are 'ENSG...|SYMBOL'
+    ad.var["gene_id"] = [v.split("|")[0] for v in ad.var_names]
+    ad.var_names = [v.split("|")[-1] for v in ad.var_names]
+    ad.var_names_make_unique()
+    meta = pd.read_csv(raw_path(acc, "meta.tsv"), sep="\t", index_col=0)
+    meta.index = meta.index.astype(str)
+    common = ad.obs_names.intersection(meta.index)
+    ad = ad[common].copy()
+    meta = meta.loc[ad.obs_names]
+    for c in meta.columns:
+        ad.obs[c] = meta[c].values
+    cols = {c.lower(): c for c in meta.columns}
+    ct_col = next((cols[c] for c in ["cell_type", "celltype", "cluster", "cell type", "type"] if c in cols), None)
+    sample_col = next((cols[c] for c in ["sample", "sample_id", "patient", "donor", "case", "library"] if c in cols), None)
+    # UCSC meta columns: cell_type, sample, diagnosis (Control/MS), stage (lesion stage), region, ...
+    lesion_col = next((cols[c] for c in ["stage", "lesion", "lesion_type", "condition", "tissue", "region"] if c in cols), None)
+    diag_col = next((cols[c] for c in ["diagnosis", "disease", "group"] if c in cols), lesion_col)
+    ad.obs["cell_type_original"] = ad.obs[ct_col].astype(str) if ct_col else "unknown"
+    ad.obs["sample"] = ad.obs[sample_col].astype(str) if sample_col else "unknown"
+    ad.obs["condition_original"] = ad.obs[lesion_col].astype(str) if lesion_col else "unknown"
+    diag = ad.obs[diag_col].astype(str) if diag_col else ad.obs["condition_original"]
+    ad.obs["group"] = np.where(diag.str.contains("ctr|control|ctrl", case=False), "Ctrl", "MS")
+    d = ad.X.data[:100000]
+    if np.allclose(d, np.round(d)):
+        ad = standard_process(ad, "human", max_mt_pct=None, do_cluster=False)
+    else:  # UCSC matrices are usually log-normalised already
+        ad.layers["counts"] = ad.X.copy()
+        ad.uns["note"] = "UCSC matrix is not integer counts; used as deposited (log-normalised)"
+    ad.obs["cell_type_coarse"] = map_original_to_coarse(ad.obs["cell_type_original"], DEFAULT_LABEL_RULES)
+    return finalize(ad, "Schirmer2019_MS_human_snRNA", "human", "snRNA", "Ctrl")
+
+
 LOADERS = {
     "Park2023_AD_hippocampus_scRNA": load_park_ad,
     "Aging_snRNA_HIP_CP_mouse": load_aging_snrna,
@@ -490,6 +733,15 @@ LOADERS = {
     "Absinta2021_MS_human_snRNA": load_absinta,
     "Chen2020_ST_AppNLGF_mouse": load_chen_st,
     "Kaya2022_aged_WM_vs_GM_scRNA": load_kaya,
+    # round 2
+    "Leng2021_AD_human_snRNA": load_leng_ad,
+    "Sadick2022_AD_human_astro_oligo_snRNA": load_sadick_ad,
+    "LPC_Cuprizone_CC_snRNA_mouse": load_lpc_cuprizone,
+    "Serpina3n_Cuprizone_snRNA_mouse": load_serpina3n_cuprizone,
+    "LermaMartin2024_MS_human_snRNA": load_lerma_martin_snrna,
+    "LermaMartin2024_MS_human_Visium": load_lerma_martin_visium,
+    "SenescentGlia2025_MS_human_Visium": load_senescent_glia_visium,
+    "Schirmer2019_MS_human_snRNA": load_schirmer,
 }
 
 
