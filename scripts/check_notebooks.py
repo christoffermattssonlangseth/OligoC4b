@@ -33,62 +33,62 @@ class Replacement:
 
 KNOWN_REPLACEMENTS = (
     Replacement(
-        path="notebooks/analysis_sc_jäkel_human.ipynb",
+        path="notebooks/analysis/analysis_sc_jäkel_human.ipynb",
         old='"source": [\n    "import scanpy as sc"\n   ]',
         new='"source": [\n    "import os\\n",\n    "import scanpy as sc"\n   ]',
     ),
     Replacement(
-        path="notebooks/analysis_sc_jäkel_human.ipynb",
+        path="notebooks/analysis/analysis_sc_jäkel_human.ipynb",
         old="adata = sc.read_h5ad('/Users/christoffer/work/karolinska/development/metamitoMicS/data/jäkel_et_al_2019.h5ad')",
         new='adata = sc.read_h5ad(os.environ[\\"OLIGOC4B_JAKEL_H5AD\\"])',
     ),
     Replacement(
-        path="notebooks/analysis_Xenium_EAE_mouse.ipynb",
+        path="notebooks/analysis/analysis_Xenium_EAE_mouse.ipynb",
         old='"source": [\n    "import scanpy as sc"\n   ]',
         new='"source": [\n    "import os\\n",\n    "import scanpy as sc"\n   ]',
     ),
     Replacement(
-        path="notebooks/analysis_Xenium_EAE_mouse.ipynb",
+        path="notebooks/analysis/analysis_Xenium_EAE_mouse.ipynb",
         old="ad = sc.read_h5ad('/Users/christoffer/work/karolinska/development/metamitoMicS/data/RREAE_5k_raw_only_integration_processed.h5ad')",
         new='ad = sc.read_h5ad(os.environ[\\"OLIGOC4B_XENIUM_EAE_H5AD\\"])',
     ),
     Replacement(
-        path="notebooks/build_sc_AD_mouse_Park.ipynb",
+        path="notebooks/build/build_sc_AD_mouse_Park.ipynb",
         old="base_dir = '/Users/christoffer/Downloads/GSE224398_RAW/'",
         new='base_dir = os.environ[\\"OLIGOC4B_SC_AD_MOUSE_RAW_DIR\\"]',
     ),
     Replacement(
-        path="notebooks/build_snRNAseq_aging_mouse_brain.ipynb",
+        path="notebooks/build/build_snRNAseq_aging_mouse_brain.ipynb",
         old='base_dir = \\"/Users/christoffer/Downloads/GSE212576_RAW\\"',
         new='base_dir = os.environ[\\"OLIGOC4B_SNRNASEQ_AGING_RAW_DIR\\"]',
     ),
     Replacement(
-        path="notebooks/build_Xenium_AD_mouse.ipynb",
+        path="notebooks/build/build_Xenium_AD_mouse.ipynb",
         old="base_dir = '/Users/christoffer/Downloads/xenium_alzheimer'",
         new='base_dir = os.environ[\\"OLIGOC4B_XENIUM_AD_RAW_DIR\\"]',
     ),
     Replacement(
-        path="notebooks/build_Visium_aging_mouse_brain.ipynb",
+        path="notebooks/build/build_Visium_aging_mouse_brain.ipynb",
         old="base_dir = '/Users/christoffer/Downloads/GSE212903_RAW/'",
         new='base_dir = os.environ[\\"OLIGOC4B_VISIUM_AGING_RAW_DIR\\"]',
     ),
     Replacement(
-        path="notebooks/build_Visium_aging_mouse_brain.ipynb",
+        path="notebooks/build/build_Visium_aging_mouse_brain.ipynb",
         old='SPATIAL_BASE = \\"/Users/christoffer/Downloads/GSE212903_spatial/\\"',
         new='SPATIAL_BASE = os.environ[\\"OLIGOC4B_VISIUM_AGING_SPATIAL_DIR\\"]',
     ),
     Replacement(
-        path="notebooks/build_sc_AD_mouse_Park.ipynb",
+        path="notebooks/build/build_sc_AD_mouse_Park.ipynb",
         old='api_key = os.getenv(\\"../OPENAI_API_KEY\\")',
         new='api_key = os.getenv(\\"OPENAI_API_KEY\\")',
     ),
     Replacement(
-        path="notebooks/build_snRNAseq_aging_mouse_brain.ipynb",
+        path="notebooks/build/build_snRNAseq_aging_mouse_brain.ipynb",
         old='api_key = os.getenv(\\"../OPENAI_API_KEY\\")',
         new='api_key = os.getenv(\\"OPENAI_API_KEY\\")',
     ),
     Replacement(
-        path="notebooks/build_Xenium_AD_mouse.ipynb",
+        path="notebooks/build/build_Xenium_AD_mouse.ipynb",
         old='api_key = os.getenv(\\"../OPENAI_API_KEY\\")',
         new='api_key = os.getenv(\\"OPENAI_API_KEY\\")',
     ),
@@ -181,7 +181,7 @@ def main() -> int:
     issues: list[str] = []
     referenced_env_vars: set[str] = set()
 
-    notebook_paths = sorted(NOTEBOOK_DIR.glob("*.ipynb"))
+    notebook_paths = sorted(NOTEBOOK_DIR.rglob("*.ipynb"))
     for path in notebook_paths:
         try:
             notebook = load_notebook(path)
