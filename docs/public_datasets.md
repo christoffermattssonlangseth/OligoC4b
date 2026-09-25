@@ -39,7 +39,7 @@ OLIGOC4B_PUBLIC_RAW_DIR=/path/to/raw sh scripts/download_public_datasets.sh   # 
 | `cell_type_original` | author annotation when deposited |
 | `condition_original` | author lesion / tissue labels (human MS) |
 
-Author cell-type labels are used where deposited (Ximerakis, Jäkel, Absinta); otherwise clusters are annotated from marker-gene scores (`annotate_by_markers`). The build notebook prints a cross-tab of author labels vs coarse types for checking.
+Author cell-type labels are used where deposited (Ximerakis, Jäkel, Absinta, Schirmer, Lerma-Martin); otherwise clusters are annotated from marker-gene scores (`annotate_by_markers`). The build notebook prints a cross-tab of author labels vs coarse types and a canonical-marker check for every dataset. The full method, marker table, mapping rules and known weak spots are in [`cell_type_annotation.md`](cell_type_annotation.md).
 
 ## Format notes (things that cost time once)
 

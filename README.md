@@ -16,7 +16,12 @@ docs/
   notebooks.md                  plain-language guide to every notebook
   complement_findings.md        what the complement analyses showed
   public_datasets.md            the public datasets: accessions, workflow, caveats
+  cell_type_annotation.md       how cell types were assigned and validated
 ```
+
+## How cell types were assigned
+
+Every object carries a ten-level `cell_type_coarse` label. Where the authors deposited annotations (Ximerakis, Jäkel, Absinta, Schirmer, Lerma-Martin, Falcão, in-house Xenium) their labels are mapped to the coarse types and kept in `cell_type_original`. Where no labels were deposited (Park, aging snRNA-seq, Zhou, Kaya, Leng, Sadick, LPC/cuprizone, Serpina3n-cKO) clusters are annotated from marker-gene scores: Leiden clusters at resolution 1, nine marker sets scored per cell, z-scored, averaged per cluster, best set wins. Oligodendrocyte and microglia labels were validated against Plp1 and Hexb (96–100% and 92–100% in every mouse dataset) and are the only labels the downstream analyses rely on; known weak spots are listed in [`docs/cell_type_annotation.md`](docs/cell_type_annotation.md), which also has the full marker table and mapping rules.
 
 Raw data and `.h5ad` files are kept out of git; notebooks read them from `data/` (relative `../../data/`) or from the environment variables below.
 

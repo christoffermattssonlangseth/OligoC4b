@@ -49,4 +49,6 @@ wait
 for acc in GSE224398 GSE212576 GSE129788 GSE140511 GSE147528 GSE167494 GSE293850 GSE319903 GSE279181 GSE277435; do
   d=$BASE/$acc; if [ -s $d/${acc}_RAW.tar ] && [ ! -f $d/.extracted ]; then (cd $d && tar -xf ${acc}_RAW.tar && touch .extracted && echo "extracted $acc"); fi
 done
+# mouse-human orthologs (MGI report) for the cross-species oligodendrocyte atlas
+curl -sL --retry 3 -o $BASE/../HMD_HumanPhenotype.rpt "https://www.informatics.jax.org/downloads/reports/HMD_HumanPhenotype.rpt"
 echo ALL_DONE

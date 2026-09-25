@@ -769,3 +769,38 @@ def build_all(only: Optional[Iterable[str]] = None, overwrite: bool = False) -> 
 
 def processed_paths() -> Dict[str, str]:
     return {os.path.basename(p)[:-5]: p for p in sorted(glob.glob(os.path.join(PROCESSED_DIR, "*.h5ad")))}
+
+# --------------------------------------------------------------------------------------------------------------------
+# orthologs (for the cross-species oligodendrocyte atlas)
+# --------------------------------------------------------------------------------------------------------------------
+
+ORTHOLOG_TABLE = os.getenv("OLIGOC4B_ORTHOLOG_TABLE", os.path.join(RAW_DIR, "..", "HMD_HumanPhenotype.rpt"))
+
+
+def load_orthologs(path: Optional[str] = None) -> Dict[str, str]:
+    """Human -> mouse symbol map from the MGI HMD_HumanPhenotype report, restricted to one-to-one pairs.
+
+    Falls back to the small curated MOUSE_TO_HUMAN table (inverted) plus upper-case matching when the file is absent.
+    """
+    path = path or ORTHOLOG_TABLE
+    human_to_mouse: Dict[str, str] = {}
+    if os.path.exists(path):
+        df = pd.read_csv(path, sep="\t", header=None, usecols=[0, 2], names=["human", "mouse"], dtype=str).dropna()
+        df = df[(df["human"] != "") & (df["mouse"] != "")]
+        h_counts, m_counts = df["human"].value_counts(), df["mouse"].value_counts()
+        one2one = df[df["human"].map(h_counts).eq(1) & df["mouse"].map(m_counts).eq(1)]
+        human_to_mouse = dict(zip(one2one["human"], one2one["mouse"]))
+    # curated overrides always win (Hc/C5 etc.)
+    for m, h in MOUSE_TO_HUMAN.items():
+        human_to_mouse[h] = m
+    return human_to_mouse
+
+
+def to_mouse_symbols(adata: AnnData, human_to_mouse: Dict[str, str]) -> AnnData:
+    """Rename a human AnnData's var_names to mouse symbols using one-to-one orthologs; drops unmapped genes."""
+    keep = [g for g in adata.var_names if g in human_to_mouse]
+    sub = adata[:, keep].copy()
+    sub.var["human_symbol"] = keep
+    sub.var_names = [human_to_mouse[g] for g in keep]
+    sub.var_names_make_unique()
+    return sub
